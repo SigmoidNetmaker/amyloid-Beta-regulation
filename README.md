@@ -8,18 +8,19 @@ Maude is a delcarative programming language used for the specification, simulati
 
 The following suit of Maude files explore most of the metabolic interactions that regulate amyloid-Beta, as identified before 2010.  
 
-alzheimer -- this module specifies most of the metabolic interactions that regulate amyloid-Beta  
+alzheimer -- this module specifies the metabolic interactions that regulate amyloid-Beta  
 mc-alzheimer -- this module sets up model-checking of the alzheimer specification  
 alzheimer-check -- this command initiates a model-check of the alzheimer specification  
 alzheimer-rew -- this command initiates rewrites of the alzheimer specification  
 alzheimer-search -- this command initiates a search in the module alzheimer specification  
 
-
-
- 
-
 The following suit of Maude files explore most of the contributions of estrogen to amyloid-Beta regulation, as identified before 2012.  
 
+alzheimerE -- this module specifies the contribution of estrogen to amyloid-Beta regulation  
+mc-alzheimerE -- this module sets up model-checking of the alzheimer-estrogen specification  
+alzheimerE-check -- this command initiates a model-check of the alzheimer-estrogen specification  
+alzheimerE-rew -- this command initiates rewrites of the alzheimer-estrogen specification  
+alzheimerE-search -- this command initiates a search in the module alzheimer-estrogen specification  
 
 
 
