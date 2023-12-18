@@ -1,0 +1,31 @@
+*** this module sets up
+*** checking of the ALZHEIMER model
+
+in alzheimer.txt .
+in model-checker.maude .
+
+mod MC-ALZHEIMER is
+  including ALZHEIMER .
+  including MODEL-CHECKER .
+
+  var X : Nat .
+  var S : State .
+
+  op AM : State -> State [ctor] .
+  ops LRPAPPeq1 LRPapoEeq1 gSECeq1 gSECeq2 hasOS ERKact cytACT hasAPO : -> Prop .
+  ops hasAD noAD aBeq0 : -> Prop .
+
+  eq AM(S Abeta(0)) |= aBeq0 = true .
+  eq AM(S AD(0)) |= noAD = true .
+  eq AM(S AD(1)) |= hasAD = true . 
+  eq AM(S OS(1)) |= hasOS = true .
+  eq AM(S ERK(1)) |= ERKact = true .
+  eq AM(S cytokine(1)) |= cytACT = true .
+  eq AM(S apoptosis(1)) |= hasAPO = true .
+  eq AM(S gammaSec(1)) |= gSECeq1 = true .
+  eq AM(S gammaSec(2)) |= gSECeq2 = true .
+  eq AM(S LRPAPP(1)) |= LRPAPPeq1 = true .
+  eq AM(S LRPapoE(1)) |= LRPapoEeq1 = true .
+
+endm
+

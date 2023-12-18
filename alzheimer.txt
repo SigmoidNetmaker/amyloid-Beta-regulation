@@ -1,0 +1,210 @@
+*** this module includes most of the interactions we have
+*** identified so far from the literature; most of the
+*** interactions are conditional equations
+
+mod ALZHEIMER is
+  protecting INT .
+  sort State .
+
+  ops CVD hypoxia HIF HIFblock                    : Int -> State [ctor] .
+  ops ischemia PERK PERKblock eIF2                : Int -> State [ctor] .
+  ops cytokine PPARgene PPAR NSAID                : Int -> State [ctor] .
+  ops OS cjunJNK1 cjunJNK2                        : Int -> State [ctor] .
+  ops PS1gene PS1 PEN2gene PEN2                   : Int -> State [ctor] .
+  ops ERK ERKblock NICgene nicastrin gammaSec     : Int -> State [ctor] .
+  ops apoptosis caspase3 caspBlock                : Int -> State [ctor] .
+  ops seladin1 GGA3gene GGA3                      : Int -> State [ctor] .
+  ops APPgene APP                                 : Int -> State [ctor] .
+  ops LRPgene LRP apoEgene apoE LRPapoE LRPAPP    : Int -> State [ctor] .
+  ops BECLRP RAGE                                 : Int -> State [ctor] .
+  ops BACEASgene BACEASRNA BACEmigene BACEmiRNA   : Int -> State [ctor] .
+  ops BACEgene BACEmRNA SNX6 BACE                 : Int -> State [ctor] .
+  ops hepSul RTN3 RAP IDE NEP                     : Int -> State [ctor] .
+  ops Abeta AD                                    : Int -> State [ctor] .
+
+  ops bAthrCY bAthrERK bAthrOS bAthrAPO bAthrAD  : -> Int .
+  op _ _  : State State -> State [assoc comm ctor] .
+
+  vars X X1 X2 X3 X4 Y Y1 Y2 Y3 Y4 Y5 Y6 Z G B : Int .
+
+  eq bAthrERK = 5 .
+  eq bAthrOS = 5 .
+  eq bAthrCY = 5 .
+  eq bAthrAPO = 6 .
+  eq bAthrAD = 7 .
+
+
+  ceq [CVDhypoxia]    : CVD(X) hypoxia(Y) = 
+                        CVD(X) hypoxia(X) if Y =/= X .
+  ceq [hypoxiaHIF]    : hypoxia(X) HIFblock(Y) HIF(Z) = 
+                        hypoxia(X) HIFblock(Y) HIF(max(0,X - Y)) if Z =/= max(0,X - Y) . 
+  ceq [CVDischemia]   : CVD(X) ischemia(Y) = 
+                        CVD(X) ischemia(X) if Y =/= X .
+  ceq [ischemiaPERK]  : ischemia(X) PERKblock(Y) PERK(Z) = 
+                        ischemia(X) PERKblock(Y) PERK(max(0,X - Y)) 
+                        if Z =/= max(0,X - Y) . 
+  ceq [PERKeIF2]      : PERK(X) eIF2(Y) = 
+                        PERK(X) eIF2(X) if Y =/= X  . 
+
+***(
+  ceq [cytoActivate]  : Abeta(X) cytokine(Y) = 
+                        Abeta(X) cytokine(1) if X > bAthrCY /\ Y =/= 1 . 
+  ceq [cytoActivate]  : Abeta(X) cytokine(Y) = 
+                        Abeta(X) cytokine(0) if X <= bAthrCY /\ Y =/= 0 .
+)
+
+  crl [cytoActivate]  : Abeta(X) cytokine(Y) => 
+                        Abeta(X) cytokine(1) if X > bAthrCY /\ Y =/= 1 . 
+  crl [cytoActivate]  : Abeta(X) cytokine(Y) => 
+                        Abeta(X) cytokine(0) if X <= bAthrCY /\ Y =/= 0 . 
+
+  ceq [PPARexpress]   : PPARgene(G) NSAID(X) cytokine(Y) PPAR(Z) = 
+                        PPARgene(G) NSAID(X) cytokine(Y) PPAR(max(0, G + (X - Y)) * G) 
+                        if Z =/= max(0, G + (X - Y)) * G .
+
+  ceq [ERKactivate]   : Abeta(X) ERKblock(B) ERK(Y) = 
+                        Abeta(X) ERKblock(B) ERK(1) 
+                        if X > bAthrERK /\ B == 0 /\ Y =/= 1 . 
+  ceq [ERKactivate]   : Abeta(X) ERKblock(B) ERK(Y) = 
+                        Abeta(X) ERKblock(B) ERK(0) 
+                        if (X <= bAthrERK or B == 1) /\ Y =/= 0 . 
+  ceq [NICexpress]    : NICgene(G) ERK(X) nicastrin(Y) = 
+                        NICgene(G) ERK(X) nicastrin(((2 * G) - X) * G) 
+                        if Y =/= ((2 * G) - X) * G  .  
+
+  ceq [sufferOS]      : Abeta(X) OS(Y) = 
+                        Abeta(X) OS(1) if X > bAthrOS /\ Y =/= 1 .  
+  ceq [sufferOS]      : Abeta(X) OS(Y) = 
+                        Abeta(X) OS(0) if X <= bAthrOS /\ Y =/= 0 .  
+
+  ceq [OScjun1]       : OS(X) cjunJNK1(Y) = 
+                        OS(X) cjunJNK1(X) if Y =/= X . 
+  ceq [OScjun2]       : OS(X) cjunJNK2(Y) = 
+                        OS(X) cjunJNK2(X) if Y =/= X . 
+
+***(
+  crl [OScjun1]       : OS(X) cjunJNK1(Y) => 
+                        OS(X) cjunJNK1(X) if Y =/= X . 
+  crl [OScjun2]       : OS(X) cjunJNK2(Y) => 
+                        OS(X) cjunJNK2(X) if Y =/= X . 
+)
+
+  ceq [PS1express]    : PS1gene(G) cjunJNK1(X) PS1(Y) = 
+                        PS1gene(G) cjunJNK1(X) PS1((G + X) * G) if Y =/= (G + X) * G .
+  ceq [PEN2express]   : PEN2gene(G) cjunJNK2(X) PEN2(Y) = 
+                        PEN2gene(G) cjunJNK2(X) PEN2((G + X) * G) if Y =/= (G + X) * G .
+
+  ceq [gammaSecCom]   : PS1(X1) PEN2(X2) nicastrin(X3) gammaSec(Y) =  
+                        PS1(X1) PEN2(X2) nicastrin(X3) gammaSec(min(X1,X2,X3)) 
+                        if Y =/= min(X1,X2,X3). 
+***(
+  ceq [sufferAPO]     : Abeta(X) apoptosis(Y) = 
+                        Abeta(X) apoptosis(1) if X > bAthrAPO /\ Y =/= 1 . 
+  ceq [sufferAPO]     : Abeta(X) apoptosis(Y) = 
+                        Abeta(X) apoptosis(0) if X <= bAthrAPO /\ Y =/= 0 . 
+)
+
+  crl [sufferAPO]     : Abeta(X) apoptosis(Y) => 
+                        Abeta(X) apoptosis(1) if X > bAthrAPO /\ Y =/= 1 . 
+  crl [sufferAPO]     : Abeta(X) apoptosis(Y) => 
+                        Abeta(X) apoptosis(0) if X <= bAthrAPO /\ Y =/= 0 . 
+
+  ceq [caspActivate]  : apoptosis(B) caspBlock(X1) seladin1(X2) caspase3(Y) = 
+                        apoptosis(B) caspBlock(X1) seladin1(X2) 
+                        caspase3(max(0, (2 * B) - (X1 + X2)) * B) 
+                        if Y =/= max(0, (2 * B) - (X1 + X2)) * B .
+  ceq [GGA3level]     : GGA3gene(G) caspase3(X) GGA3(Y) = 
+                        GGA3gene(G) caspase3(X) GGA3(((2 * G) - X) * G) 
+                        if Y =/= ((2 * G) - X) * G . 
+
+  ceq [BACEASlevel]   : BACEASgene(G) Abeta(X) BACEASRNA(Y) = 
+                        BACEASgene(G) Abeta(X) BACEASRNA((if X > 0 then 2 else 1 fi) * G) 
+                        if Y =/= (if X > 0 then 2 else 1 fi) * G .
+  ceq [BACEmilevel]   : BACEmigene(G) Abeta(X) BACEmiRNA(Y) = 
+                        BACEmigene(G) Abeta(X) BACEmiRNA((if X > 0 then 1 else 2 fi) * G) 
+                        if Y =/= (if X > 0 then 1 else 2 fi) * G .
+
+  ceq [LRPexpress]    : LRPgene(G) LRP(X) = LRPgene(G) LRP(G) if X =/= G .
+  ceq [apoEexpress]   : apoEgene(G) apoE(X) = apoEgene(G) apoE(G) if X =/= G .
+  ceq [APPexpress]    : APPgene(G) APP(X) = APPgene(G) APP(G) if X =/= G .
+
+  ceq [makeLRPapoE]   : LRP(X1) apoE(X2) LRPapoE(Y) = 
+                        LRP(X1) apoE(X2) LRPapoE(min(X1, X2)) if Y =/= min(X1, X2) .
+  ceq [makeLRPAPP]    : LRP(X1) APP(X2) LRPAPP(Y) = 
+                        LRP(X1) APP(X2) LRPAPP(min(X1, X2)) if Y =/= min(X1, X2) .
+  ceq [makeBECLRP]    : LRP(X) BECLRP(Y) = LRP(X) BECLRP(X) if Y =/= X . 
+
+***(
+  crl [makeLRPapoE]   : LRP(X1) apoE(X2) LRPapoE(Y) => 
+                        LRP(X1) apoE(X2) LRPapoE(min(X1, X2)) if Y =/= min(X1, X2) .
+  crl [makeLRPAPP]    : LRP(X1) APP(X2) LRPAPP(Y) => 
+                        LRP(X1) APP(X2) LRPAPP(min(X1, X2)) if Y =/= min(X1, X2) .
+  crl [makeBECLRP]    : LRP(X) BECLRP(Y) => LRP(X) BECLRP(X) if Y =/= X .
+)
+
+
+  ceq [opposeRAGE]    : BECLRP(X) RAGE(Y) = BECLRP(X) RAGE(if X == 1 then 0 else 1 fi) 
+                        if Y =/= if X == 1 then 0 else 1 fi .
+
+  ceq [BmRNAlevel]    : BACEgene(G) BACEASRNA(X1) HIF(X2) PPAR(Y) BACEmRNA(Z) =
+                        BACEgene(G) BACEASRNA(X1) HIF(X2) PPAR(Y) 
+                        BACEmRNA(((4 + X1 + X2) - Y) * G) 
+                        if Z =/= ((4 + X1 + X2) - Y) * G . 
+
+  ceq [BACElevel]     : BACEmRNA(X1) eIF2(X2) BACEmiRNA(Y1) GGA3(Y2) SNX6(Y3) BACE(Z) = 
+                        BACEmRNA(X1) eIF2(X2) BACEmiRNA(Y1) GGA3(Y2) SNX6(Y3) 
+                        BACE(((3 + X1 + X2) - (Y1 + Y2 + Y3)) * min(1, X1)) 
+                        if Z =/= ((3 + X1 + X2) - (Y1 + Y2 + Y3)) * min(1, X1) .
+
+  ceq [Abetaproduce]  : APP(G) BACE(X1) gammaSec(X2) LRPAPP(X3) RAGE(X4)
+                        LRPapoE(Y1) hepSul(Y2) RTN3(Y3) RAP(Y4) IDE(Y5) NEP(Y6) 
+                        Abeta(Z) = 
+			      APP(G) BACE(X1) gammaSec(X2) LRPAPP(X3) RAGE(X4)
+                        LRPapoE(Y1) hepSul(Y2) RTN3(Y3) RAP(Y4) IDE(Y5) NEP(Y6) 
+                        Abeta(((5 + X1 + X2 + X3 + X4) - ((2 * Y1) + Y2 + Y3 + Y4 + 
+                        Y5 + Y6)) * (G * min(1, X1, X2))) 
+                        if Z =/= ((5 + X1 + X2 + X3 + X4) - ((2 * Y1) + Y2 + Y3 + Y4 + 
+                        Y5 + Y6)) * (G * min(1, X1, X2)) .
+
+***(
+  ceq [AbetaprodLRP2] : APP(G) BACE(X1) gammaSec(X2) LRPAPP(X3) RAGE(X4)
+                        LRPapoE(Y1) hepSul(Y2) RTN3(Y3) RAP(Y4) IDE(Y5) NEP(Y6) 
+                        Abeta(Z) = 
+			      APP(G) BACE(X1) gammaSec(X2) LRPAPP(X3) RAGE(X4) 
+                        LRPapoE(Y1) hepSul(Y2) RTN3(Y3) RAP(Y4) IDE(Y5) NEP(Y6) 
+                        Abeta(((5 + X1 + X2 + (2 * X3) + X4) - ((2 * Y1) + Y2 + Y3 + 
+                        Y4 + Y5 + Y6)) * (G * min(1, X1, X2))) 
+                        if Z =/= ((5 + X1 + X2 + (2 * X3) + X4) - ((2 * Y1) + Y2 + Y3 + 
+                        Y4 + Y5 + Y6)) * (G * min(1, X1, X2)) .
+)
+
+***(
+  ceq [AbetaprodAPO1] : APP(G) BACE(X1) gammaSec(X2) LRPAPP(X3) RAGE(X4)
+                        LRPapoE(Y1) hepSul(Y2) RTN3(Y3) RAP(Y4) IDE(Y5) NEP(Y6) 
+                        Abeta(Z) = 
+			      APP(G) BACE(X1) gammaSec(X2) LRPAPP(X3) RAGE(X4)
+                        LRPapoE(Y1) hepSul(Y2) RTN3(Y3) RAP(Y4) IDE(Y5) NEP(Y6) 
+                        Abeta(((5 + X1 + X2 + X3 + X4) - (Y1 + Y2 + Y3 + Y4 + 
+                        Y5 + Y6)) * (G * min(1, X1, X2))) 
+                        if Z =/= ((5 + X1 + X2 + X3 + X4) - (Y1 + Y2 + Y3 + Y4 + 
+                        Y5 + Y6)) * (G * min(1, X1, X2)) .
+)
+
+***(
+  ceq [contractAD]    : Abeta(X) AD(Y) = 
+                        Abeta(X) AD(1) if X > bAthrAD /\ Y =/= 1 .
+  ceq [contractAD]    : Abeta(X) AD(Y) = 
+                        Abeta(X) AD(0) if X <= bAthrAD /\ Y =/= 0 .
+)
+
+  crl [contractAD]    : Abeta(X) AD(Y) => 
+                        Abeta(X) AD(1) if X > bAthrAD /\ Y =/= 1 .
+  crl [contractAD]    : Abeta(X) AD(Y) => 
+                        Abeta(X) AD(0) if X <= bAthrAD /\ Y =/= 0 .
+
+
+endm
+
+ 
+
+
