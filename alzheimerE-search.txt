@@ -1,0 +1,29 @@
+*** this command initiates a search
+*** in the module ALZHEIMERE
+
+search [20] in ALZHEIMERE :
+
+*** set presence/absence of genes
+PPARgene(1) PS1gene(1) PEN2gene(1) NICgene(1) seladin1gene(1) GGA3gene(1) APPgene(1) 
+LRPgene(1) apoEgene(1) Pgpgene(1) BACEASgene(1) BACEmigene(1) BACEgene(1) NEPgene(1)
+BclxLgene(1) Bclwgene(1) Bimgene(1)
+*** set presence/absence of endogeneous factors 
+estrogen(1) SNX6(1) RAGE(1) hepSul(1) RTN3(1) RAP(1) IDE(1) ACE(1)   
+*** set presence/absence of pathological conditions and drugs 
+CVD(1) NSAID(1) HIFblock(1) caspBlock(0) ERKblock(0) PERKblock(0) 
+ERalphaAg(0) ERbetaAg(0)
+*** other molecular species and processes are determined by model dynamics
+hypoxia(0) HIF(0) ischemia(0) PERK(0) eIF2(0) cytokine(0) PPARmRNA(0) PPAR(0) OS(0) 
+JNK(0) cJun(0) SOD(0) ERK(0) PS1mRNA(0) PS1(0) PEN2mRNA(0) PEN2(0) nicastrin(0) 
+gammaSec(0) PKCalpha(0) alphaSec(0) Smac(0) XIAP(0) caspase9(0) caspase3(0)
+seladin1mRNA(0) seladin1(0) GGA3(0) APP(0) Abeta(0) AD(0) LRPmRNA(0) LRP(0) apoEmRNA(0) apoE(0) LRPapoE(0) LRPAPP(0) BECLRP(0) PgpmRNA(0) Pgp(0) BACEASRNA(0) BACEmiRNA(0) BACEmRNA(0) BACE(0) NEPmRNA(0) NEP(0) BclxLmRNA(0) BclxL(0) BclwmRNA(0) Bclw(0) 
+BimmRNA(0) Bim(0) ERalpha(0) ERbeta(0)
+
+=>+
+
+*** OS(1) caspase3(0) S:State .
+*** OS(1) caspase3(0) ERalpha(1) ERbeta(1) PKCalpha(1) S:State .
+ERbeta(0) NEP(X) such that X > 2 .
+
+
+

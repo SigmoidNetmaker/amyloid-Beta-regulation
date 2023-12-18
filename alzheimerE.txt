@@ -1,0 +1,239 @@
+*** this module includes many (hopefully most) of the interactions 
+*** relevant to Abeta regulation and the effects of estrogen
+
+mod ALZHEIMERE is
+  protecting INT .
+  sort State .
+
+  ops CVD hypoxia HIF HIFblock                    : Int -> State [ctor] .
+  ops ischemia PERK PERKblock eIF2                : Int -> State [ctor] .
+  ops cytokine PPARgene PPARmRNA PPAR NSAID       : Int -> State [ctor] .
+  ops OS JNK cJun SOD ERK ERKblock                : Int -> State [ctor] .
+  ops PS1gene PS1mRNA PS1                         : Int -> State [ctor] .
+  ops PEN2gene PEN2mRNA PEN2                      : Int -> State [ctor] .
+  ops NICgene nicastrin gammaSec                  : Int -> State [ctor] .
+  ops PKCalpha alphaSec                           : Int -> State [ctor] .
+  ops Smac XIAP caspase9 caspase3 caspBlock       : Int -> State [ctor] .
+  ops seladin1gene seladin1mRNA seladin1          : Int -> State [ctor] .
+  ops GGA3gene GGA3 SNX6                          : Int -> State [ctor] .
+  ops APPgene APP Abeta AD                        : Int -> State [ctor] .
+  ops LRPgene LRPmRNA LRP                         : Int -> State [ctor] .
+  ops apoEgene apoEmRNA apoE                      : Int -> State [ctor] .
+  ops LRPapoE LRPAPP BECLRP                       : Int -> State [ctor] .
+  ops Pgpgene PgpmRNA Pgp RAGE                    : Int -> State [ctor] .
+  ops BACEASgene BACEASRNA BACEmigene BACEmiRNA   : Int -> State [ctor] .
+  ops BACEgene BACEmRNA BACE                      : Int -> State [ctor] .
+  ops hepSul RTN3 RAP IDE ACE                     : Int -> State [ctor] .
+  ops NEPgene NEPmRNA NEP                         : Int -> State [ctor] .
+  ops BclxLgene BclxLmRNA BclxL                   : Int -> State [ctor] .
+  ops Bclwgene BclwmRNA Bclw                      : Int -> State [ctor] .
+  ops Bimgene BimmRNA Bim                         : Int -> State [ctor] .
+  ops estrogen ERalpha ERbeta                     : Int -> State [ctor] .
+  ops ERalphaAg ERbetaAg                          : Int -> State [ctor] .
+
+  ops thrCY thrERK thrOS thrAD     : -> Int .
+  ops conBACEmRNA conBACE conAbeta : -> Int .
+  op _ _  : State State -> State [assoc comm ctor] .
+
+  vars X X1 X2 X3 X4 Y Y1 Y2 Y3 Y4 Y5 Y6 Y7 Y8 Y9 Z G B : Int .
+
+  eq thrCY = 6 .
+  eq thrERK = 6 .
+  eq thrOS = 9 .
+  eq thrAD = 12 .
+  eq conBACEmRNA = 6 .
+  eq conBACE = 6 .
+  eq conAbeta = 6 .
+
+ 
+  crl [ERalphaAct]    : estrogen(X1) ERalphaAg(X2) ERalpha(Y) =>
+                        estrogen(X1) ERalphaAg(X2) 
+                        ERalpha(if X1 > 0 or X2 > 0 then 1 else 0 fi) 
+                        if Y =/= if X1 > 0 or X2 > 0 then 1 else 0 fi .  
+  crl [ERbetaAct]     : estrogen(X1) ERbetaAg(X2) ERbeta(Y) =>
+                        estrogen(X1) ERbetaAg(X2) 
+                        ERbeta(if X1 > 0 or X2 > 0 then 1 else 0 fi)
+                        if Y =/= if X1 > 0 or X2 > 0 then 1 else 0 fi .  
+
+  ceq [CVDhypoxia]    : CVD(X) hypoxia(Y) = 
+                        CVD(X) hypoxia(X) if Y =/= X .
+  ceq [hypoxiaHIF]    : hypoxia(X) HIFblock(Y) HIF(Z) = 
+                        hypoxia(X) HIFblock(Y) HIF(max(0,X - Y)) if Z =/= max(0,X - Y) . 
+  ceq [CVDischemia]   : CVD(X) ischemia(Y) = 
+                        CVD(X) ischemia(X) if Y =/= X .
+  ceq [ischemiaPERK]  : ischemia(X) PERKblock(Y) PERK(Z) = 
+                        ischemia(X) PERKblock(Y) PERK(max(0,X - Y)) 
+                        if Z =/= max(0,X - Y) . 
+  ceq [PERKeIF2]      : PERK(X) eIF2(Y) = 
+                        PERK(X) eIF2(X) if Y =/= X  . 
+
+  ceq [cytoActivate]  : Abeta(X) cytokine(Y) = 
+                        Abeta(X) cytokine(1) if X > thrCY and Y =/= 1 . 
+  ceq [cytoActivate]  : Abeta(X) cytokine(Y) = 
+                        Abeta(X) cytokine(0) if X <= thrCY and Y =/= 0 .
+
+  ceq [PPARmessage]   : PPARgene(G) NSAID(X1) ERalpha(X2) ERbeta(X3) cytokine(Y) 
+                        PPARmRNA(Z) = 
+                        PPARgene(G) NSAID(X1) ERalpha(X2) ERbeta(X3) cytokine(Y) 
+                        PPARmRNA(if G =/= 0 and (X2 == 1 or X3 == 1) 
+                        then max(0, (2 + X1) - Y)
+                        else if G =/= 0 and X2 == 0 and X3 == 0 
+                        then max(0, (1 + X1) - Y) else 0 fi fi)
+                        if Z =/= if G =/= 0 and (X2 == 1 or X3 == 1) 
+                        then max(0, (2 + X1) - Y)
+                        else if G =/= 0 and X2 == 0 and X3 == 0 
+                        then max(0, (1 + X1) - Y) else 0 fi fi .
+  ceq [PPARexpress]   : PPARmRNA(X) PPAR(Y) = 
+                        PPARmRNA(X) PPAR(X) if Y =/= X .
+
+  crl [PKCact]        : estrogen(X) PKCalpha(Y) =>
+                        estrogen(X) PKCalpha(X) if Y =/= X .
+
+  ceq [aSecactivate]  : PKCalpha(X) alphaSec(Y) =
+                        PKCalpha(X) alphaSec(X) if Y =/= X . 
+
+  ceq [ERKactivate]   : Abeta(X1) PKCalpha(X2) ERKblock(B) ERK(Y) = 
+                        Abeta(X1) PKCalpha(X2) ERKblock(B) ERK(1) 
+                        if (X1 + X2) > thrERK and B == 0 and Y =/= 1 . 
+  ceq [ERKactivate]   : Abeta(X1) PKCalpha(X2) ERKblock(B) ERK(Y) = 
+                        Abeta(X1) PKCalpha(X2) ERKblock(B) ERK(0) 
+                        if ((X1 + X2) <= thrERK or B == 1) and Y =/= 0 . 
+  ceq [NICexpress]    : NICgene(G) ERK(X) nicastrin(Y) = 
+                        NICgene(G) ERK(X) nicastrin((2 - X) * G) 
+                        if Y =/= (2 - X) * G  .  
+
+  ceq [SODexpress]    : ERalpha(X) SOD(Y) = 
+                        ERalpha(X) SOD(X) if Y =/= X . 
+  ceq [sufferOS]      : Abeta(X1) cytokine(X2) SOD(Y) OS(Z) = 
+                        Abeta(X1) cytokine(X2) SOD(Y) OS(1) 
+                        if ((X1 + X2) - Y) > thrOS and Z =/= 1 .  
+  ceq [sufferOS]      : Abeta(X1) cytokine(X2) SOD(Y) OS(Z) = 
+                        Abeta(X1) cytokine(X2) SOD(Y) OS(0) 
+                        if ((X1 + X2) - Y) <= thrOS and Z =/= 0 .  
+
+  ceq [JNKactivate]   : OS(X) JNK(Y) =
+                        OS(X) JNK(X) if Y =/= X .
+  ceq [cJunactivate]  : JNK(X) cJun(Y) =
+                        JNK(X) cJun(X) if Y =/= X . 
+
+  ceq [PS1message]    : PS1gene(G) cJun(X) PS1mRNA(Y) =
+                        PS1gene(G) cJun(X) PS1mRNA((1 + X) * G) if Y =/= (1 + X) * G .
+  ceq [PEN2message]   : PEN2gene(G) cJun(X) PEN2mRNA(Y) = 
+                        PEN2gene(G) cJun(X) PEN2mRNA((1 + X) * G) if Y =/= (1 + X) * G .
+  ceq [PS1express]    : PS1mRNA(X) PS1(Y) =
+                        PS1mRNA(X) PS1(X) if Y =/= X .
+  ceq [PEN2express]   : PEN2mRNA(X) PEN2(Y) =
+                        PEN2mRNA(X) PEN2(X) if Y =/= X .
+  ceq [gammaSecCom]   : PS1(X1) PEN2(X2) nicastrin(X3) gammaSec(Y) =  
+                        PS1(X1) PEN2(X2) nicastrin(X3) gammaSec(min(X1,X2,X3)) 
+                        if Y =/= min(X1,X2,X3). 
+
+  ceq [BclxLmessage]  : BclxLgene(G) ERalpha(X1) ERbeta(X2) cJun(Y) BclxLmRNA(Z) =
+                        BclxLgene(G) ERalpha(X1) ERbeta(X2) cJun(Y)
+                        BclxLmRNA(((1 + max(X1, X2)) - Y ) * G) 
+                        if Z =/= ((1 + max(X1, X2)) - Y) * G .
+  ceq [Bclwmessage]   : Bclwgene(G) cJun(Y) BclwmRNA(Z) =
+                        Bclwgene(G) cJun(Y) BclwmRNA((1 - Y) * G) if Z =/= (1 - Y) * G .
+  ceq [Bimmessage]    : Bimgene(G) cJun(X) BimmRNA(Y) =
+                        Bimgene(G) cJun(X) BimmRNA((1 + X) * G) if Y =/= (1 + X) * G .
+  ceq [Bimexpress]    : BimmRNA(X) Bim(Y) =
+                        BimmRNA(X) Bim(X) if Y =/= X .
+  ceq [BclxLexpress]  : BclxLmRNA(X) Bim(Y) BclxL(Z) =
+                        BclxLmRNA(X) Bim(Y) BclxL(max(0, ((1 + X) - Y))) 
+                        if Z =/= max(0, ((1 + X) - Y)) .
+  ceq [Bclwexpress]   : BclwmRNA(X) Bim(Y) Bclw(Z) =
+                        BclwmRNA(X) Bim(Y) Bclw(max(0, ((1 + X) - Y))) 
+                        if Z =/= max(0, ((1 + X) - Y)) .
+
+  ceq [seladin1mess]  : seladin1gene(G) ERalpha(X) seladin1mRNA(Y) =
+                        seladin1gene(G) ERalpha(X) seladin1mRNA(X * G)
+                        if Y =/= (X * G) . 
+  ceq [seldin1expr]   : seladin1mRNA(X) seladin1(Y) =
+                        seladin1mRNA(X) seladin1(X) if Y =/= X . 
+  ceq [Smacactivate]  : OS(X) BclxL(Y1) Bclw(Y2) Smac(Z) =
+                        OS(X) BclxL(Y1) Bclw(Y2) Smac(max(0, (X - (Y1 + Y2))))
+                        if Z =/= max(0, (X - (Y1 + Y2))) .
+  ceq [XIAPactivate]  : Smac(X) XIAP(Y) =
+                        Smac(X) XIAP(X) if Y =/= X .
+  ceq [caspase9act]   : XIAP(X) caspase9(Y) =
+                        XIAP(X) caspase9(X) if Y =/= X .
+
+  ceq [caspase3act]   : caspase9(X) caspBlock(Y1) seladin1(Y2) caspase3(Z) =
+                        caspase9(X) caspBlock(Y1) seladin1(Y2) 
+                        caspase3(if Y1 == 0 then max(0, (X - Y2)) else 0 fi)
+                        if Z =/= (if Y1 == 0 then max(0, (X - Y2)) else 0 fi) .
+
+  ceq [GGA3level]     : GGA3gene(G) caspase3(X) GGA3(Y) = 
+                        GGA3gene(G) caspase3(X) GGA3((2 - X) * G) 
+                        if Y =/= (2 - X) * G . 
+
+  ceq [BACEASlevel]   : BACEASgene(G) Abeta(X) BACEASRNA(Y) = 
+                        BACEASgene(G) Abeta(X) BACEASRNA((if X > 0 then 2 else 1 fi) * G) 
+                        if Y =/= (if X > 0 then 2 else 1 fi) * G .
+  ceq [BACEmilevel]   : BACEmigene(G) Abeta(X) BACEmiRNA(Y) = 
+                        BACEmigene(G) Abeta(X) BACEmiRNA((if X > 0 then 1 else 2 fi) * G) 
+                        if Y =/= (if X > 0 then 1 else 2 fi) * G .
+  ceq [BACEmessage]   : BACEgene(G) BACEASRNA(X1) HIF(X2) PPAR(Y) BACEmRNA(Z) =
+                        BACEgene(G) BACEASRNA(X1) HIF(X2) PPAR(Y) 
+                        BACEmRNA(((conBACEmRNA + X1 + X2) - Y) * G) 
+                        if Z =/= ((conBACEmRNA + X1 + X2) - Y) * G . 
+  ceq [BACElevel]     : BACEmRNA(X1) eIF2(X2) BACEmiRNA(Y1) GGA3(Y2) SNX6(Y3) BACE(Z) = 
+                        BACEmRNA(X1) eIF2(X2) BACEmiRNA(Y1) GGA3(Y2) SNX6(Y3) 
+                        BACE(((conBACE + X1 + X2) - (Y1 + Y2 + Y3)) * min(1, X1)) 
+                        if Z =/= ((conBACE + X1 + X2) - (Y1 + Y2 + Y3)) * min(1, X1) .
+
+  ceq [LRPmessage]    : LRPgene(G) ERalpha(X1) ERbeta(X2) LRPmRNA(Y) =
+                        LRPgene(G) ERalpha(X1) ERbeta(X2) 
+                        LRPmRNA(if G =/= 0 and (X1 == 1 or X2 == 1) then 2 else
+                        if G =/= 0 and X1 == 0 and X2 == 0 then 1 else 0 fi fi) 
+                        if Y =/= if G =/= 0 and (X1 == 1 or X2 == 1) then 2 else
+                        if G =/= 0 and X1 == 0 and X2 == 0 then 1 else 0 fi fi .
+  ceq [LRPexpress]    : LRPmRNA(X) LRP(Y) = 
+                        LRPmRNA(X) LRP(X) if Y =/= X . 
+  ceq [apoEmesage]    : apoEgene(G) ERalpha(X) ERbeta(Y) apoEmRNA(Z) =
+                        apoEgene(G) ERalpha(X) ERbeta(Y) 
+                        apoEmRNA(((1 + (2 * X)) - Y) * G)
+                        if Z =/= ((1 + (2 * X)) - Y) * G .
+  ceq [apoEexpress]   : apoEmRNA(X) apoE(Y) = 
+                        apoEmRNA(X) apoE(X) if Y =/= X .
+  ceq [makeLRPapoE]   : LRP(X1) apoE(X2) LRPapoE(Y) = 
+                        LRP(X1) apoE(X2) LRPapoE(min(X1, X2)) if Y =/= min(X1, X2) .
+  ceq [makeLRPAPP]    : LRP(X1) APP(X2) LRPAPP(Y) = 
+                        LRP(X1) APP(X2) LRPAPP(min(X1, X2)) if Y =/= min(X1, X2) .
+  ceq [makeBECLRP]    : LRP(X) BECLRP(Y) =
+                        LRP(X) BECLRP(X) if Y =/= X . 
+
+  ceq [Pgpmessage]    : Pgpgene(G) ERalpha(X) PgpmRNA(Y) =
+                        Pgpgene(G) ERalpha(X) PgpmRNA((1 + X) * G) if Y =/= (1 + X) * G .
+  ceq [Pgpexpress]    : PgpmRNA(X) Pgp(Y) = 
+                        PgpmRNA(X) Pgp(X) if Y =/= X .
+
+  ceq [NEPmessage]    : NEPgene(G) ERalpha(X1) ERbeta(X2) NEPmRNA(Y) =
+                        NEPgene(G) ERalpha(X1) ERbeta(X2) NEPmRNA((1 + (X1 + X2)) * G)
+                        if Y =/= (1 + (X1 + X2)) * G .
+  ceq [NEPexpress]    : NEPmRNA(X) NEP(Y) = 
+                        NEPmRNA(X) NEP(X) if Y =/= X . 
+
+  ceq [APPexpress]    : APPgene(G) APP(X) = APPgene(G) APP(G) if X =/= G .
+
+  ceq [Abetaproduce]  : APP(B) BACE(X1) gammaSec(X2) LRPAPP(X3) RAGE(X4)
+                        LRPapoE(Y1) hepSul(Y2) RTN3(Y3) RAP(Y4) IDE(Y5) NEP(Y6) ACE(Y7) 
+                        Pgp(Y8) alphaSec(Y9) Abeta(Z) = 
+			      APP(B) BACE(X1) gammaSec(X2) LRPAPP(X3) RAGE(X4)
+                        LRPapoE(Y1) hepSul(Y2) RTN3(Y3) RAP(Y4) IDE(Y5) NEP(Y6) ACE(Y7) 
+                        Pgp(Y8) alphaSec(Y9) 
+                        Abeta(((conAbeta + X1 + X2 + X3 + X4) - ((2 * Y1) + Y2 + Y3 + 
+                        Y4 + Y5 + Y6 + Y7 + Y8 + Y9)) * (B * min(1, X1, X2))) 
+                        if Z =/= ((conAbeta + X1 + X2 + X3 + X4) - ((2 * Y1) + Y2 + Y3 + 
+                        Y4 + Y5 + Y6 + Y7 + Y8 + Y9)) * (B * min(1, X1, X2)) .
+
+  ceq [contractAD]    : Abeta(X) AD(Y) = 
+                        Abeta(X) AD(1) if X > thrAD and Y =/= 1 .
+  ceq [contractAD]    : Abeta(X) AD(Y) = 
+                        Abeta(X) AD(0) if X <= thrAD and Y =/= 0 .
+
+endm
+
+ 
+
+

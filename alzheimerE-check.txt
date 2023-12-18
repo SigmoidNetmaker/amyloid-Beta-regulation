@@ -1,0 +1,163 @@
+*** this command initiates a model check
+*** of the module ALZHEIMERE
+
+red in MC-ALZHEIMERE : 
+modelCheck( AM
+*** set presence/absence of genes
+( PPARgene(1) PS1gene(1) PEN2gene(1) NICgene(1) seladin1gene(1) GGA3gene(1) APPgene(1) 
+LRPgene(1) apoEgene(1) Pgpgene(1) BACEASgene(1) BACEmigene(1) BACEgene(1) NEPgene(1)
+BclxLgene(1) Bclwgene(1) Bimgene(1)
+*** set presence/absence of endogeneous factors 
+estrogen(1) SNX6(1) RAGE(1) hepSul(1) RTN3(1) RAP(1) IDE(1) ACE(1)   
+*** set presence/absence of pathological conditions and drugs 
+CVD(1) NSAID(1) HIFblock(1) caspBlock(0) ERKblock(0) PERKblock(0) 
+ERalphaAg(0) ERbetaAg(0)
+*** other molecular species and processes are determined by model dynamics
+hypoxia(0) HIF(0) ischemia(0) PERK(0) eIF2(0) cytokine(0) PPARmRNA(0) PPAR(0) OS(0) 
+JNK(0) cJun(0) SOD(0) ERK(0) PS1mRNA(0) PS1(0) PEN2mRNA(0) PEN2(0) nicastrin(0) 
+gammaSec(0) PKCalpha(0) alphaSec(0) Smac(0) XIAP(0) caspase9(0) caspase3(0)
+seladin1mRNA(0) seladin1(0) GGA3(0) APP(0) Abeta(0) AD(0) LRPmRNA(0) LRP(0) apoEmRNA(0) apoE(0) LRPapoE(0) LRPAPP(0) BECLRP(0) PgpmRNA(0) Pgp(0) BACEASRNA(0) BACEmiRNA(0) BACEmRNA(0) BACE(0) NEPmRNA(0) NEP(0) BclxLmRNA(0) BclxL(0) BclwmRNA(0) Bclw(0) 
+BimmRNA(0) Bim(0) ERalpha(0) ERbeta(0) ),
+
+*** basic checks with CVD present but estrogen absent
+*** [] AbEQ0 ) . *** is T when gene for APP, BACE, PS2, PEN2, or nicastrin are absent
+
+*** the following check the model with estrogen 1 CVD 1 NSAID 1 HIFblock 1
+*** <> hasAD ) .        *** eventually has AD
+                        *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** [] ~ hasAD ) .      *** never has AD (always does not have AD) 
+                        *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** [] noAD ) .         *** always does not have AD, equivalent to above
+                        *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** [] AbEQ0 ) .        *** Abeta is always 0
+                        *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ hasOS => noAD ) .     *** not having OS implies not having AD
+                            *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ cytACT => noAD ) .    *** not activating cytokines implies not having AD
+                            *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ casp3ACT => noAD ) .  *** not activating caspase3 implies not having AD
+                            *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ hasOS => AbEQ2 ) .    *** not having OS implies Abeta equals 2
+                            *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ cytACT => AbEQ2 ) .   *** not activating cytokines implies Abeta equals 2
+                            *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ casp3ACT => AbEQ2 ) .        *** not activating caspase3 implies Abeta equals 2
+                                   *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (~ hasOS /\ ~ casp3ACT) => AbEQ2 ) .   *** not OS and not caspase3 implies Abeta = 2
+                                            *** is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (~ hasOS /\ ~ cytACT) => AbEQ2 ) .     *** not OS and not cyto implies Abeta = 3
+                                            *** is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                                            *** this doesn't mean too much
+*** ~ hasOS <=> ~ casp3ACT ) .   *** not OS implies not caspase3 and vice-versa 
+                                 *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                                 *** so implication must be F in at least 1 direction 
+*** ~ hasOS => ~ casp3ACT ) .    *** not having OS implies not activating caspase3
+                                 *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ casp3ACT => ~ hasOS ) .    *** not activating caspase3 implies not having OS
+                                 *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                                 *** this is expected given previous two results
+*** ~ cytACT => ~ hasOS ) .      *** not activating cytokines implies not having OS 
+                                 *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ hasOS => ~ cytACT ) .      *** not having OS implies not activating cytokines 
+                                 *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ cytACT => ~ casp3ACT ) .   *** not act cytokines implies not act caspase3
+                                 *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+                                 *** as it should be given previous results
+*** [] cytACT ) .                *** cytokine always active
+                                 *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ AbEQ2 U PKCeq1 ) .         *** Abeta does not equal 2 until PKC equals 1
+                                 *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** PKCeq1 => ~ cytACT ) .       *** PKC equals 1 implies cytokines not activated
+                                 *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** NEPeq3 |-> ~ hasOS ) .       *** NEP 3 leads to not having OS
+                                 *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** NEPeq3 |-> (~ hasOS /\ ~ casp3ACT) ) .   *** NEP 3 leads to caspase3 0 and OS 0
+                                             *** is T with est 1 CVD 1 NSAID 1 HIFblock 1
+                                             *** this is expected from previous results
+*** NEPeq3 |-> (hasOS /\ casp3ACT) ) .       *** NEP 3 leads to caspase 1 and OS 1
+                                             *** this is counterexample to previous
+                                             *** path indicates OS 0 requires activation
+                                             *** of ERalpha, ERbeta, and PKCalpha
+*** hasOS U NEPeq3 ) .     *** OS 1 until NEP 3
+                           *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** NEPeq2 |-> ~ hasOS ) .       *** NEP 2 leads to not having OS
+                                 *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+                                 *** but does this mean much? NEP 2 leads to NEP 3!
+*** hasOS /\ AbEQ1 ) .   *** has OS and Abeta equals 1 (are they compatible?)
+                         *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                         *** so you can't have OS and have Abeta equal 1
+*** hasOS /\ NEPeq3 ) .  *** has OS and NEP equals 3 (are they compatible?)
+                         *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ AbEQ2 U NEPeq3 ) .  *** Abeta doesn't equal 2 until NEP equals 3
+                          *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ NEPeq3 U ERbACT ) . *** NEP does not equal 3 until ERbeta is activated
+                          *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** NEPeq3 => AbEQ2 ) .  *** NEP equals 3 implies Abeta equals 2
+                         *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                         *** this result shows that something else is needed
+*** PKCeq1 => AbEQ2 ) .  *** PKC equals 1 implies Abeta equals 2
+                         *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                         *** this result also shows that something else is needed
+*** cytACT U (PKCeq1 /\ NEPeq3) ) . *** cytokines are active until PKC 1 and NEP 3
+                                    *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ cytACT => AbEQ2 ) .  *** inactive cytokines implies Abeta equals 2
+                           *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (ERbACT /\ PKCeq1) => AbEQ2 ) . *** ERalpha active and PKC 1 implies Abeta = 3
+                                     *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                                     *** we already knew this because ERalpha and ERbeta 
+                                     *** must be active and PKC must be 1 for Abeta = 2
+*** PKCeq1 => NEPeq3 ) .    *** PKC equals 1 implies NEP equals 3
+                            *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                            *** and it should be, just checking
+*** ERaACT => (PKCeq1 \/ NEPeq3) ) . *** ERalpha activation implies PKC 1 or NEP 3
+                                     *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+                                     *** ERalpha active ensures neither PKC 1 nor NEP 3
+**** (ERaACT /\ ERbACT /\ PKCeq1) => (PKCeq1 /\ NEPeq3) ) . *** all receptors imps both
+                                             *** is T with est 1 CVD 1 NSAID 1 HIFblock 1
+
+*** some model-checks for Table 3 in the paper
+*** ERaACT => AbEQ2 ) .          *** activation of ERalpha implies Abeta equals 2
+                                 *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (ERaACT /\ ERbACT) => AbEQ2 ) .     *** activation of ERa and ERb implies Abeta = 2
+                                         *** is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (ERaACT /\ PKCeq1) => AbEQ2 ) .  *** ERa 1 and PKC 1 imply Abeta = 2
+                                      *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (ERbACT /\ PKCeq1) => AbEQ2 ) .  *** ERb 1 and PKC 1 imply Abeta = 2
+                                      *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (ERaACT /\ ERbACT /\ PKCeq1) => AbEQ2 ) .  *** ERa 1 ERb 1 PKC 1 imply Abeta = 2
+                                             *** is T with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (ERaACT /\ ERbACT /\ PKCeq1 /\ AbLT3) => AbEQ2 ) . *** above with Ab > 3 conjoined
+                                                        *** is T with above conditions
+                                                        *** but the Ab > 3 is stupid
+                                                        *** so must check each separately
+**** (ERaACT \/ ERbACT) => PKCeq1 ) . *** activation of ERalpha or ERbeta implies PKC = 1
+                                      *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ PKCeq1 U estEQ1 ) .  *** PKC does not equal 1 until estrogen equals 1
+                           *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+                           *** trivial result but worth a check a guess
+*** PKCeq1 => AbEQ2 ) .  *** PKC equals 1 implies Abeta equals 2
+                         *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+*** NEPeq3 => AbEQ2 ) .  *** NEP equals 3 implies Abeta equals 2
+                         *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (PKCeq1 /\ NEPeq3) => AbEQ2 ) .   *** PKC = 1 and NEP = 3 imply Abeta = 2
+                                       *** is T with est 1 CVD 1 NSAID 1 HIFblock 1
+*** ~ AbEQ2 U (PKCeq1 /\ NEPeq3) ) . *** Abeta does not equal 2 until PKC 1 and NEP 3
+                                     *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+                                     *** this is stronger statement than previous
+*** ERaACT => NEPeq3 ) .    *** ERalpha activation implies NEP equals 3
+                            *** this is F with est 1 CVD 1 NSAID 1 HIFblock 1
+**** (ERaACT /\ ERbACT) => NEPeq3 ) .   *** ERalpha and ERbeta both active implies NEP3
+                                        *** this is T with est 1 CVD 1 NSAID 1 HIFblock 1
+
+
+
+*** in conclusion:
+*** getting Abeta to 2 requires getting NEP to 3 AND PKC to 1
+*** getting NEP to 3 and PKC to 1 requires activating ERalpha, ERbeta, and PKCalpha
+*** ERalphaAg alone can't get NEP to 3
+*** can ERalphaAg and ERbetaAg both activate PKC? not known!
+
+
+
+
+      

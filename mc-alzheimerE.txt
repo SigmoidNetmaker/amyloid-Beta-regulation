@@ -1,0 +1,38 @@
+*** this module trys to set up
+*** checking of the ALZHEIMERE model
+
+in alzheimerE.txt .
+in model-checker.maude .
+
+mod MC-ALZHEIMERE is
+  including ALZHEIMERE .
+  including MODEL-CHECKER .
+
+  var X : Nat .
+  var S : State .
+
+  op AM : State -> State [ctor] .
+  ops estEQ1 ERaACT ERbACT : -> Prop .
+  ops PKCeq1 hasOS cytACT casp3ACT NEPeq2 NEPeq3 : -> Prop .
+  ops AbEQ0 AbEQ1 AbEQ2 AbLT4 AbLT3 AbLT2 noAD hasAD : -> Prop .
+
+  eq AM(S estrogen(1)) |= estEQ1 = true .
+  eq AM(S ERalpha(1)) |= ERaACT = true .
+  eq AM(S ERbeta(1)) |= ERbACT = true .
+  eq AM(S PKCalpha(1)) |= PKCeq1 = true .
+  eq AM(S OS(1)) |= hasOS = true .
+  eq AM(S cytokine(1)) |= cytACT = true .
+  eq AM(S caspase3(1)) |= casp3ACT = true .
+  eq AM(S NEP(2)) |= NEPeq2 = true .
+  eq AM(S NEP(3)) |= NEPeq3 = true .
+  eq AM(S Abeta(0)) |= AbEQ0 = true .
+  eq AM(S Abeta(1)) |= AbEQ1 = true .
+  eq AM(S Abeta(2)) |= AbEQ2 = true .
+  eq AM(S Abeta(X)) |= AbLT4 = X < 4 .
+  eq AM(S Abeta(X)) |= AbLT3 = X < 3 .
+  eq AM(S Abeta(X)) |= AbLT2 = X < 2 .
+  eq AM(S AD(0)) |= noAD = true .
+  eq AM(S AD(1)) |= hasAD = true . 
+
+endm
+
